@@ -1,4 +1,5 @@
 #!/usr/bin/python
+    rmax=raw_input('Input Rmax : ');
 with open('bauckhage.pgm','r') as f:
     # marker
     read_var = f.read(3)
