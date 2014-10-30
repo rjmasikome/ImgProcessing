@@ -26,8 +26,9 @@ new_img = (spectrum * 255).astype(np.uint8)
 # Save the image from array
 result = Image.fromarray(new_img)
 result.save('image_1.bmp')
-print "New image is available"
+print "New image_1 is available"
 
+#Taking the input of Rmin and Rmax
 while True :
     rmin=raw_input('Input Rmin : ');
     rmax=raw_input('Input Rmax : ');
@@ -39,6 +40,7 @@ while True :
     else:
         break
 
+#Initializing variables and array
 width, height = result.size
 
 array_new = []
@@ -52,58 +54,37 @@ w_half = width/2
 
 img_array = list(result.getdata())
 
+#Put on the loop the needed calculation
 for i in range(height) :
-	for j in range(width) :
-		if pow(j - w_half,2) + pow(i - h_half,2) >= rmin*rmin:
-			if pow(j - w_half,2) + pow(i - h_half,2) <= rmax*rmax:
-				array_new[j+i*width] = img_array[j+i*width]
-			else :
-				array_new[j+i*width] = 0
-		else :
-			array_new[j+i*width] = 0
+    for j in range(width) :
+        if pow(j - w_half,2) + pow(i - h_half,2) >= rmin*rmin:
+            if pow(j - w_half,2) + pow(i - h_half,2) <= rmax*rmax:
+                array_new[j+i*width] = img_array[j+i*width]
+            else :
+                array_new[j+i*width] = 0
+        else :
+            array_new[j+i*width] = 0
 
+#Parse the array into image
 new_img_2 = Image.new('L', (256,256))
 new_img_2.putdata(array_new)
 new_img_2.save('image_2.bmp')
 print "New image_2 is available"
 
+#Parse the image into umpy tuppled array and make the value to 1 apart from 0
 a = np.asarray(new_img_2, dtype=float)
+a = np.ceil(a/a.max())
 
-log_res = (a/255)*(log_max-log_min)+log_min
+#Multiply the Shifted fourier transform tuppled array to array a which correspond to third image 
+filtered = a*fshift
 
-i_log = np.exp(log_res)
+#Reversing fourier transform
+f_ishift = np.fft.ifftshift(filtered)
+ifourier = np.fft.ifft2(f_ishift)
+ifourier = np.abs(ifourier)
 
-ifshift = abs(np.fft.ifft2(i_log))
-ifourier = np.fft.ifftshift(ifshift)
-
-
+#Saving the image
 new_img_3 = ifourier.astype(np.uint8)
-
-print new_img_3.min()
-print new_img_3.max()
-
 result = Image.fromarray(new_img_3)
 result.save('image_3.bmp')
-
-#scipy.misc.imsave('outfile.jpg', y)
-
-#c = np.fft.irfft2(i_log)
-
-#j = Image.fromarray(i_log.astype(np.uint8))
-#j.save('img2.png')
-
-#ifourier = np.fft.ifft2(new_img_2)
-
-#Take the log of the fourier shift
-#spectrum = np.log(np.abs(ifourier))
-
-#Make sure the log scale from 0 to 1
-#spectrum = (spectrum - spectrum.min()) / (spectrum.max() - spectrum.min())
-
-#new_img_3 = (spectrum * 255).astype(np.uint8)
-
-#result = Image.fromarray(new_img_3)
-#result.save('image_3.jpg')
-
-#scipy.misc.imsave('outfile.jpg', y)
-#y.save("new.jpg")
+print "New image_3 is available"
