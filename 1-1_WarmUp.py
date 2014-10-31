@@ -1,4 +1,7 @@
 #!/usr/bin/python
+import Image
+import numpy as np
+
 # get rmin and rmax from user
 while True :
     rmin=raw_input('Input Rmin : ');
@@ -11,62 +14,44 @@ while True :
     else:
         break
 
-with open('bauckhage.pgm','r') as f:
-# Parsing file pgm
-    # marker
-    read_var = f.read(3)
-    # image width
-    width = f.read(3)
-    width = int(width)
-    # space
-    read_var = f.read(1)
-    # image height
-    height = f.read(3)
-    height = int(height)
-    # offset
-    read_var = f.read(5)
+# Initialise variables and arrays
+img = Image.open("bauckhage.jpg")
+width, height = img.size            # Get width and height from original image
+h_half = height/2                   # Make it half
+w_half = width/2
+i = 0
+j = 0
 
-    # print image width and height
-    print 'Image Width\t: ' + str(width)
-    print 'Image Height\t: ' + str(height)
-
-    # initialize and get byte array
-    array = []
-    while True:
-        read_var = f.read(1)
-        #print read_var
-        try :
-            int_read_var = int(read_var.encode('hex'),16)
-            array.append(int_read_var)
-        except :
-            break
-
-# Process
-# initialize new array
-array_new = []
+array_new = []                      # Construct and initialise new array for process
 for x in range(width*height) :
     array_new.append(x)
 
-# initialize variable
-i = 0
-j = 0
-h_half = height/2
-w_half = width/2
+img_array = list(img.getdata())     # Convert data from image as array
 
+# Process array
 for j in range(height) :
     for i in range(width) :
         if pow(i - w_half,2) + pow(j - h_half,2) >= rmin*rmin:
             if pow(i - w_half,2) + pow(j - h_half,2) <= rmax*rmax :
                 array_new[i+j*width] = 0
             else :
-                array_new[i+j*width] = array[i+j*width]
+                array_new[i+j*width] = img_array[i+j*width]
         else :
-            array_new[i+j*width] = array[i+j*width]
+            array_new[i+j*width] = img_array[i+j*width]
 
-# create new file
-with open('bauckhage_new.pgm','w') as f:
-    f.write("P5\n")
-    f.write("%d %d\n" % (width, height))
-    f.write("255\n")
-    for item in array_new:
-      f.write(chr(item))
+# Save the image from array
+# Parameter in function new
+# -- 1 (1-bit pixels, black and white, stored with one pixel per byte)
+# -- L (8-bit pixels, black and white)
+# -- P (8-bit pixels, mapped to any other mode using a colour palette)
+# -- RGB (3x8-bit pixels, true colour)
+# -- RGBA (4x8-bit pixels, true colour with transparency mask)
+# -- CMYK (4x8-bit pixels, colour separation)
+# -- YCbCr (3x8-bit pixels, colour video format)
+# -- I (32-bit signed integer pixels)
+# -- F (32-bit floating point pixels)
+
+new_img = Image.new('L', (width,height))        
+new_img.putdata(array_new)
+new_img.save('New_Image.jpg')
+print "New image is available"
