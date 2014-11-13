@@ -2,56 +2,98 @@
 import Image
 import numpy as np
 
-# get rmin and rmax from user
-while True :
-    rmin=raw_input('Input Rmin : ');
-    rmax=raw_input('Input Rmax : ');
-    # cast to integer
-    rmin = int(rmin)
-    rmax = int(rmax)
-    if(rmin > rmax):
-        print "Rmin should be less than Rmax\n"
-    else:
-        break
+def get_img():
+#
+#     Function to get the image file name from user.
+#     Image file should be in the same folder with this script file
+#     User input image file name with extension.
+#     Example : clock.jpg
+#     returns: output = Image file
+#              filename = Image filename
+#
+    while True :
+        filename=raw_input('Input filename of the image : ');
+        try:
+            with open(filename) as file:
+             output = Image.open(filename)
+             break
+        except IOError as e:    # throw exception if image file cannot be opened
+            print "Unable to open file"
+    return (output, filename)
 
-# Initialise variables and arrays
-img = Image.open("bauckhage.jpg")
-width, height = img.size            # Get width and height from original image
-h_half = height/2                   # Make it half
-w_half = width/2
-i = 0
-j = 0
+def get_r_value():
+#
+#     Get radius minimum and maximum value for image function
+#     Rmin (radius minimum) should be less than Rmax (radius maximum)
+#     returns: rmin = radius minimum
+#              rmax = radius maximum
+#
+    while True :
+        rmin=raw_input('Input Rmin : ');
+        rmax=raw_input('Input Rmax : ');
 
-array_new = []                      # Construct and initialise new array for process
-for x in range(width*height) :
-    array_new.append(x)
+        rmin = int(rmin)    # cast rmin value to integer
+        rmax = int(rmax)    # cast rmax value to integer
 
-img_array = list(img.getdata())     # Convert data from image as array
+        if(rmin > rmax):    # check rmin and rmax condition
+            print "Rmin should be less than Rmax\n"
+        else:
+            break
+    return (rmin, rmax)
 
-# Process array
-for j in range(height) :
-    for i in range(width) :
-        if pow(i - w_half,2) + pow(j - h_half,2) >= rmin*rmin:
-            if pow(i - w_half,2) + pow(j - h_half,2) <= rmax*rmax :
-                array_new[i+j*width] = 0
+def img_to_file(img, filename):
+#
+#     Convert and save array of image to the image file
+#     Input  : img = array of image
+#            : filename = file name in string
+#     returns: output = Image file
+#
+    output = Image.fromarray(img.astype(np.uint8))
+    output.save(filename)
+    print filename + " is created"
+    return output
+
+def image_function_task1(img, rmin, rmax):
+#
+#     Mapping every pixels in the image with this function :
+#     _G(x,y) = 0     , if rmin <= ||(x,y) - (w/2,h/2)|| <= rmax
+#     _G(x,y) = G(x,y), if otherwise
+#     Input  : img = array of image
+#              rmin = radius minimum value
+#              rmax = radius maximum value
+#     returns: output = Image file
+#
+    width, height = img.size    # get width and height size
+
+    output = np.zeros(shape=(width,height), dtype=np.int)   # create new array 2d with dimension
+                                                            # width x height and integer datatype 
+    i = 0   # initialize increment variable
+    j = 0
+    h_half = height/2   # initialize constant requirement
+    w_half = width/2
+
+    img_array = np.asarray(img)
+
+    for j in range(height) :    # traverse and process pixels in image arrays row-wise
+        for i in range(width) :
+            if pow(i - w_half,2) + pow(j - h_half,2) >= rmin*rmin:
+                if pow(i - w_half,2) + pow(j - h_half,2) <= rmax*rmax :
+                    output[i, j] = 0
+                else :
+                    output[i, j] = img_array[i, j]
             else :
-                array_new[i+j*width] = img_array[i+j*width]
-        else :
-            array_new[i+j*width] = img_array[i+j*width]
+                output[i, j] = img_array[i, j]
+    return output
 
-# Save the image from array
-# Parameter in function new
-# -- 1 (1-bit pixels, black and white, stored with one pixel per byte)
-# -- L (8-bit pixels, black and white)
-# -- P (8-bit pixels, mapped to any other mode using a colour palette)
-# -- RGB (3x8-bit pixels, true colour)
-# -- RGBA (4x8-bit pixels, true colour with transparency mask)
-# -- CMYK (4x8-bit pixels, colour separation)
-# -- YCbCr (3x8-bit pixels, colour video format)
-# -- I (32-bit signed integer pixels)
-# -- F (32-bit floating point pixels)
+######## Main Program ########
+img, filename = get_img()
+filename_split = filename.split(".")    # split file name, ex: filename.txt -> var[0] = filename, var[1] = txt
 
-new_img = Image.new('L', (width,height))        
-new_img.putdata(array_new)
-new_img.save('New_Image.jpg')
-print "New image is available"
+rmin, rmax = get_r_value()
+
+image_result = image_function_task1(img, rmin, rmax)    # process the image
+
+new_filename = filename_split[0] + "-task1." + filename_split[1]    # create filename
+result = img_to_file(image_result, new_filename)    # save image from array
+
+######## End ########
