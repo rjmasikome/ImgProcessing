@@ -28,6 +28,13 @@ def get_r_value():
             break
     return (rmin, rmax)
 
+def normalize(number):
+    number = np.abs(number)
+    number = (number - number.min()) / (number.max() - number.min())
+    output = (number * 255).astype(np.uint8)
+    
+    return output
+
 def img_to_file(img, filename):
     #Save image into a file
     output = Image.fromarray(img)
@@ -50,14 +57,7 @@ def log_of_fft(img_fshift):
     #Take the log of the fourier shift
     spectrum = np.log1p(np.abs(img_fshift))
 
-    log_min = spectrum.min()
-    log_max = spectrum.max()
-
-    #Make sure the log scale from 0 to 1
-    spectrum = (spectrum - spectrum.min()) / (spectrum.max() - spectrum.min())
-
-    #Make the array from 0 - 255 and cast to integer instead of float
-    output = (spectrum * 255).astype(np.uint8)
+    output = normalize(spectrum)
 
     return output
 
@@ -83,8 +83,12 @@ def ifft_process(img_fshift):
     #Reversing fourier transform
     f_ishift = np.fft.ifftshift(img_fshift)
     ifourier = np.fft.ifft2(f_ishift)
-    output = np.abs(ifourier)
+
+    output = normalize(ifourier)
+
     return output
+    
+
 ##================================================
 
 #Initialization
@@ -115,7 +119,7 @@ img_back = ifft_process(suppress_freq_img)
 
 #Save the image from array
 new_filename = filename_split[0] + "-back." + filename_split[1]
-result = img_to_file(img_back.astype(np.uint8), new_filename)
+result = img_to_file(img_back, new_filename)
 
 #Visualization with plot
 plt.subplot(221),plt.imshow(img, cmap = 'gray')
