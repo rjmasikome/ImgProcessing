@@ -47,11 +47,11 @@ def img_to_file(img, filename):
     print filename + " is created"
     return output
 
-def prepare_mask(m_size):
+def prepare_mask(m_size):           # Task 1 Number 1
     sigma = (m_size - 1.0) / (2.0 * 2.575)
     m_array = np.zeros((m_size,m_size))
     const = 1 / (2 * np.pi * sigma * sigma)
-    print sigma*sigma
+
     m_radius = m_size / 2;
     sum_gauss = 0
     for x in range (m_size):
@@ -64,10 +64,34 @@ def prepare_mask(m_size):
             m_array[x,y] = m_array[x,y] * (1 / sum_gauss)
     return m_array
 
+def prepare_mask_2(m_size):             # Task 1 Number 2
+    sigma = (m_size - 1.0) / (2.0 * 2.575)
+    m_array = np.zeros((m_size,m_size))
+
+    const = 1 / (np.sqrt(2 * np.pi)* sigma)
+
+    m_radius = m_size / 2;
+    
+    sum_gauss = 0
+    for y in range (m_size):
+        for x in range (m_size):
+            m_array[x,y] = const * np.exp(-1 * np.power(x - m_radius,2) / (2 *  sigma * sigma))
+            
+    for x in range (m_size):
+        for y in range (m_size):
+            m_array[x,y] *= const * np.exp(-1 * np.power(y - m_radius,2) / (2 *  sigma * sigma))
+            sum_gauss = sum_gauss + m_array[x,y]
+    
+    # normalize
+    for x in range(m_size):
+        for y in range(m_size):
+            m_array[x,y] = m_array[x,y] * (1 / sum_gauss)
+    return m_array
+
+
 def image_function_task1(img, m_array, m_size):
 
     width, height = img.size    # get width and height size
-
     output = np.zeros(shape=(width,height), dtype=np.int)   # create new array 2d
 
     img_array = np.asarray(img)
@@ -88,14 +112,13 @@ def image_function_task1(img, m_array, m_size):
     return output[m_size_half+1:width-m_size_half,m_size_half+1:width-m_size_half]
 
 
-
 ######## Main Program ########
 img, filename = get_img()
 filename_split = filename.split(".")    # split file name, ex: filename.txt -> var[0] = filename, var[1] = txt
 
 m_size = get_mask_size()
 
-m_array = prepare_mask(m_size)
+m_array = prepare_mask_2(m_size)
 
 image_result = image_function_task1(img, m_array, m_size)    # process the image
 print image_result
