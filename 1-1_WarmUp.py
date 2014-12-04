@@ -12,7 +12,7 @@ def get_img():
 #              filename = Image filename
 #
     while True :
-        filename=raw_input('Input filename of the image : ');
+        filename = raw_input('Input filename of the image : ');
         try:
             with open(filename) as file:
              output = Image.open(filename)
@@ -29,8 +29,8 @@ def get_r_value():
 #              rmax = radius maximum
 #
     while True :
-        rmin=raw_input('Input Rmin : ');
-        rmax=raw_input('Input Rmax : ');
+        rmin = raw_input('Input Rmin : ');
+        rmax = raw_input('Input Rmax : ');
 
         rmin = int(rmin)    # cast rmin value to integer
         rmax = int(rmax)    # cast rmax value to integer
