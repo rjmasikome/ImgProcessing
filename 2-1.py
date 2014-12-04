@@ -35,17 +35,17 @@ def get_mask_size():
         m_size = int(m_size)
         return (m_size)
 
-# def img_to_file(img, filename):
-# #
-# #     Convert and save array of image to the image file
-# #     Input  : img = array of image
-# #            : filename = file name in string
-# #     returns: output = Image file
-# #
-#     output = Image.fromarray(img.astype(np.uint8))
-#     output.save(filename)
-#     print filename + " is created"
-#     return output
+def img_to_file(img, filename):
+#
+#     Convert and save array of image to the image file
+#     Input  : img = array of image
+#            : filename = file name in string
+#     returns: output = Image file
+#
+    output = Image.fromarray(img.astype(np.uint8))
+    output.save(filename)
+    print filename + " is created"
+    return output
 
 def prepare_mask(m_size):
     sigma = (m_size - 1.0) / (2.0 * 2.575)
@@ -64,37 +64,28 @@ def prepare_mask(m_size):
             m_array[x,y] = m_array[x,y] * (1 / sum_gauss)
     return m_array
 
-# def image_function_task1(img, rmin, rmax):
-# #
-# #     Mapping every pixels in the image with this function :
-# #     _G(x,y) = 0     , if rmin <= ||(x,y) - (w/2,h/2)|| <= rmax
-# #     _G(x,y) = G(x,y), if otherwise
-# #     Input  : img = array of image
-# #              rmin = radius minimum value
-# #              rmax = radius maximum value
-# #     returns: output = Image file
-# #
-#     width, height = img.size    # get width and height size
+def image_function_task1(img, m_array, m_size):
 
-#     output = np.zeros(shape=(width,height), dtype=np.int)   # create new array 2d with dimension
-#                                                             # width x height and integer datatype
-#     i = 0   # initialize increment variable
-#     j = 0
-#     h_half = height/2   # initialize constant requirement
-#     w_half = width/2
+    width, height = img.size    # get width and height size
 
-#     img_array = np.asarray(img)
+    output = np.zeros(shape=(width,height), dtype=np.int)   # create new array 2d
 
-#     for j in range(height) :    # traverse and process pixels in image arrays row-wise
-#         for i in range(width) :
-#             if pow(i - w_half,2) + pow(j - h_half,2) >= rmin*rmin:
-#                 if pow(i - w_half,2) + pow(j - h_half,2) <= rmax*rmax :
-#                     output[i, j] = 0
-#                 else :
-#                     output[i, j] = img_array[i, j]
-#             else :
-#                 output[i, j] = img_array[i, j]
-#     return output
+    img_array = np.asarray(img)
+    m_size_half = m_size / 2
+    output = img_array;
+    np.lib.pad(output, ((m_size_half,m_size_half), (m_size_half,m_size_half)), 'minimum')
+    output.setflags(write=True)
+    output.shape
+    
+    for y in xrange(m_size_half+1,height-m_size_half) :    # traverse and process pixels in image arrays row-wise
+        for x in xrange(m_size_half+1,width-m_size_half) :
+            sum_output = 0
+            for j in xrange (-m_size_half,m_size_half+1) :
+                for i in xrange (-m_size_half,m_size_half+1) :
+                    sum_output += output[x - i][y - j] * m_array[m_size_half - i][m_size_half - j]
+                sum_output += output[x - i][y - j] * m_array[m_size_half - i][m_size_half - j]
+            output[x,y] = sum_output
+    return output[m_size_half+1:width-m_size_half,m_size_half+1:width-m_size_half]
 
 
 
@@ -105,13 +96,13 @@ filename_split = filename.split(".")    # split file name, ex: filename.txt -> v
 m_size = get_mask_size()
 
 m_array = prepare_mask(m_size)
-print m_array
-plt.imshow(m_array)
+
+image_result = image_function_task1(img, m_array, m_size)    # process the image
+print image_result
+plt.imshow(image_result)
 plt.gray()
 plt.show()
-#image_result = image_function_task1(img, rmin, rmax)    # process the image
-
-#new_filename = filename_split[0] + "-task1." + filename_split[1]    # create filename
-#result = img_to_file(image_result, new_filename)    # save image from array
+new_filename = filename_split[0] + "-task2-1." + filename_split[1]    # create filename
+result = img_to_file(image_result, new_filename)    # save image from array
 
 ######## End ########
