@@ -2,6 +2,7 @@
 
 import Image
 import numpy as np
+import time
 import matplotlib.pyplot as plt #use for debugging
 
 def get_img():
@@ -91,6 +92,8 @@ def prepare_mask_2(m_size):             # Task 1 Number 2
 
 def image_function_task1(img, m_array, m_size):
 
+    start = time.time()
+
     width, height = img.size    # get width and height size
     output = np.zeros(shape=(width,height), dtype=np.int)   # create new array 2d
 
@@ -109,23 +112,80 @@ def image_function_task1(img, m_array, m_size):
                     sum_output += output[x - i][y - j] * m_array[m_size_half - i][m_size_half - j]
                 sum_output += output[x - i][y - j] * m_array[m_size_half - i][m_size_half - j]
             output[x,y] = sum_output
+
+    elapse = time.time()
+
+    print elapse-start
+
     return output[m_size_half+1:width-m_size_half,m_size_half+1:width-m_size_half]
 
+def image_function_task1_3(img, m_array, m_size):
+
+    start = time.time()
+
+    width, height = img.size    # get width and height size
+    
+    img_array = np.asarray(img)
+
+    pad_value = 256 - m_size
+
+    m_array = np.lib.pad(m_array, ((0,pad_value), (0,pad_value)), 'constant', constant_values=0)
+
+    img_fft = np.fft.fft2(img_array)
+    m_fft = np.fft.fft2(m_array)
+
+    mul_fft = img_fft*m_fft
+
+    #Apply inverse FFT to the new complex function
+    new_ifou = np.fft.ifft2(mul_fft)
+
+    #Find the magnitude part of the inversed function to build the image
+    output = np.abs(new_ifou)
+
+    elapse = time.time()
+
+    print elapse-start
+
+    return output[m_size:width,m_size:width]    
 
 ######## Main Program ########
-img, filename = get_img()
+# img, filename = get_img()
+
+# Temporary ######
+filename = "bauckhage.jpg"
+img = Image.open(filename)
+######################
+
+
 filename_split = filename.split(".")    # split file name, ex: filename.txt -> var[0] = filename, var[1] = txt
 
 m_size = get_mask_size()
 
-m_array = prepare_mask_2(m_size)
+print "Processing masks..."
 
-image_result = image_function_task1(img, m_array, m_size)    # process the image
-print image_result
-plt.imshow(image_result)
-plt.gray()
-plt.show()
-new_filename = filename_split[0] + "-task2-1." + filename_split[1]    # create filename
-result = img_to_file(image_result, new_filename)    # save image from array
+m_array = prepare_mask(m_size)
+m_array2 = prepare_mask_2(m_size)
+
+print "Processing Task 1.1..."
+
+image_result1 = image_function_task1(img, m_array, m_size)    # process the image
+new_filename1 = filename_split[0] + "-task1-1." + filename_split[1]    # create filename
+
+print "Processing Task 1.2..."
+
+image_result2 = image_function_task1(img, m_array2, m_size)
+new_filename2 = filename_split[0] + "-task1-2." + filename_split[1]    # create filename
+
+print "Processing Task 1.3..."
+
+image_result3 = image_function_task1_3(img, m_array, m_size)    # process the image
+new_filename3 = filename_split[0] + "-task1-3." + filename_split[1]    # create filename
+
+result1 = img_to_file(image_result1, new_filename1)    # save image from array
+result2 = img_to_file(image_result2, new_filename2)    # save image from array
+result3 = img_to_file(image_result3, new_filename3)    # save image from array
+
+
+
 
 ######## End ########
