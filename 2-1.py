@@ -117,17 +117,20 @@ def image_function_task1_3(img, m_array, m_size):
 
     start = time.time()
 
-    width, height = img.size    # get width and height size
-    
     img_array = np.asarray(img)
 
-    pad_value = 256 - m_size
+    if m_size%2 == 0:
+        img_array_pad = np.lib.pad(img_array, ((m_size/2,m_size/2), (m_size/2,m_size/2)), 'edge')
+    else:
+        img_array_pad = np.lib.pad(img_array, (((m_size/2)+1,m_size/2), ((m_size/2)+1,m_size/2)), 'edge')
 
-    m_array = np.lib.pad(m_array, ((0,pad_value), (0,pad_value)), 'constant', constant_values=0)
+    pad_value = len(img_array_pad) - m_size
 
-    img_fft = np.fft.fft2(img_array)
-    m_fft = np.fft.fft2(m_array)
+    m_array_pad = np.lib.pad(m_array, ((0,pad_value), (0,pad_value)), 'constant', constant_values=0)
 
+    img_fft = np.fft.fft2(img_array_pad)
+    m_fft = np.fft.fft2(m_array_pad)
+    
     mul_fft = img_fft*m_fft
 
     #Apply inverse FFT to the new complex function
@@ -140,7 +143,7 @@ def image_function_task1_3(img, m_array, m_size):
 
     print elapse-start
 
-    return output[m_size:width,m_size:width]    
+    return output[m_size:len(img_array_pad),m_size:len(img_array_pad)]
 
 ######## Main Program ########
 # img, filename = get_img()
