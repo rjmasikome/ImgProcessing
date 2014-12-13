@@ -92,32 +92,27 @@ def prepare_mask_2(m_size):             # Task 1 Number 2
 
 def image_function_task1(img, m_array, m_size):
 
-    start = time.time()
-
     width, height = img.size    # get width and height size
     output = np.zeros(shape=(width,height), dtype=np.int)   # create new array 2d
 
     img_array = np.asarray(img)
     m_size_half = m_size / 2
-    output = img_array;
-    np.lib.pad(output, ((m_size_half,m_size_half), (m_size_half,m_size_half)), 'minimum')
+    print m_size_half
+    # output = img_array;
+    output = np.lib.pad(img_array, ((m_size_half,m_size_half), (m_size_half,m_size_half)), 'edge')
     output.setflags(write=True)
     output.shape
-    
-    for y in xrange(m_size_half+1,height-m_size_half) :    # traverse and process pixels in image arrays row-wise
-        for x in xrange(m_size_half+1,width-m_size_half) :
+    print output
+    for y in xrange(m_size_half,height-m_size_half+1) :    # traverse and process pixels in image arrays row-wise
+        for x in xrange(m_size_half,width-m_size_half+1) :
             sum_output = 0
             for j in xrange (-m_size_half,m_size_half+1) :
                 for i in xrange (-m_size_half,m_size_half+1) :
                     sum_output += output[x - i][y - j] * m_array[m_size_half - i][m_size_half - j]
                 sum_output += output[x - i][y - j] * m_array[m_size_half - i][m_size_half - j]
             output[x,y] = sum_output
+    return output[m_size_half:width+m_size_half,m_size_half:height+m_size_half]
 
-    elapse = time.time()
-
-    print elapse-start
-
-    return output[m_size_half+1:width-m_size_half,m_size_half+1:width-m_size_half]
 
 def image_function_task1_3(img, m_array, m_size):
 
