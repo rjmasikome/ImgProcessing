@@ -98,7 +98,6 @@ def image_function_task1(img, m_array, m_size):
     img_array = np.asarray(img)
     m_size_half = m_size / 2
     print m_size_half
-    # output = img_array;
     output = np.lib.pad(img_array, ((m_size_half,m_size_half), (m_size_half,m_size_half)), 'edge')
     output.setflags(write=True)
     output.shape
