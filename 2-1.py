@@ -4,6 +4,7 @@ import Image
 import numpy as np
 import time
 import matplotlib.pyplot as plt #use for debugging
+import csv
 
 def get_img():
 #
@@ -97,11 +98,9 @@ def image_function_task1(img, m_array, m_size):
 
     img_array = np.asarray(img)
     m_size_half = m_size / 2
-    print m_size_half
     output = np.lib.pad(img_array, ((m_size_half,m_size_half), (m_size_half,m_size_half)), 'edge')
     output.setflags(write=True)
     output.shape
-    print output
     for y in xrange(m_size_half,height-m_size_half+1) :    # traverse and process pixels in image arrays row-wise
         for x in xrange(m_size_half,width-m_size_half+1) :
             sum_output = 0
@@ -114,9 +113,6 @@ def image_function_task1(img, m_array, m_size):
 
 
 def image_function_task1_3(img, m_array, m_size):
-
-    start = time.time()
-
     img_array = np.asarray(img)
 
     if m_size%2 == 0:
@@ -139,50 +135,116 @@ def image_function_task1_3(img, m_array, m_size):
     #Find the magnitude part of the inversed function to build the image
     output = np.abs(new_ifou)
 
-    elapse = time.time()
-
-    print elapse-start
-
     return output[m_size:len(img_array_pad),m_size:len(img_array_pad)]
+
+
+def append_toFile(elapsed, m_size, taskNum):
+    #
+    # This function is for saving the runtime to File
+    #
+    outputName = "data"+ str(taskNum) +"/"+ str(m_size) + ".txt"
+    with open(outputName, "a") as myfile:
+        myfile.write(str(elapsed)+';')
+
+
+def getAverage(taskNum, maskArray):
+    #
+    # This function is to get the average runtime from the file
+    # Read the whole row and parse it to float
+    # and also filter out Empty string
+    #
+    averageArray = []
+    for mask in maskArray :
+        filename = "data"+ str(taskNum) +"/" + str(mask) + ".txt"
+        results = list(csv.reader(open(filename), delimiter=";"))
+        results = filter(None,results[0])
+        results = [float(x) for x in results]
+        averageArray.append(sum(results)/len(results))
+
+    return averageArray
+
+
+def task1(img,m_size,filename_split):
+    start = time.time()
+    print "Processing Task 1.1..."
+    m_array = prepare_mask(m_size)
+
+    image_result1 = image_function_task1(img, m_array, m_size)    # process the image
+    new_filename1 = filename_split[0] + "-task1-1." + filename_split[1]    # create filename
+    result1 = img_to_file(image_result1, new_filename1)    # save image from array
+
+    elapsed = time.time() - start
+    print "Elapsed time: " + str(elapsed)
+    append_toFile(elapsed,m_size,1)
+
+
+def task2(img,m_size,filename_split):
+    start = time.time()
+    print "Processing Task 1.2..."
+    m_array = prepare_mask_2(m_size)
+
+    image_result2 = image_function_task1(img, m_array, m_size)
+    new_filename2 = filename_split[0] + "-task1-2." + filename_split[1]    # create filename
+
+    result2 = img_to_file(image_result2, new_filename2)    # save image from array
+
+    elapsed = time.time() - start
+    print "Elapsed time: " + str(elapsed)
+    append_toFile(elapsed,m_size,2)
+
+
+def task3(img,m_size,filename_split):
+    start = time.time()
+    print "Processing Task 1.3..."
+    m_array = prepare_mask(m_size)
+
+    image_result3 = image_function_task1_3(img, m_array, m_size)    # process the image
+    new_filename3 = filename_split[0] + "-task1-3." + filename_split[1]    # create filename
+
+    result3 = img_to_file(image_result3, new_filename3)    # save image from array
+    
+    elapsed = time.time() - start
+    print "Elapsed time: " + str(elapsed)
+    append_toFile(elapsed,m_size,3)
+
+
+def task4(image):
+
+    # The Array of mask size
+    maskArray = [3,5,7,9,11,13,15,17,19,21]
+
+    # Get the Array of average runtime for each task
+    averageArray1 = getAverage(1, maskArray)
+    averageArray2 = getAverage(2, maskArray)
+    averageArray3 = getAverage(3, maskArray)
+
+    #Plotting using pyplot
+    plt.figure("Running Time vs Mask Size")
+    plt.subplot(221),plt.title("Original Image"),plt.imshow(image, cmap = 'gray')
+    plt.subplot(222),plt.title("Task 1 Runtime"),plt.ylabel("Time(s)"),plt.plot(maskArray,averageArray1, '-o')
+    plt.subplot(223),plt.title("Task 2 Runtime"),plt.xlabel("Mask Size"),plt.ylabel("Time(s)"),plt.plot(maskArray,averageArray2, '-o')
+    plt.subplot(224),plt.title("Task 3 Runtime"),plt.xlabel("Mask Size"),plt.ylabel("Time(s)"),plt.plot(maskArray,averageArray3, '-o')
+
+    plt.show()
 
 ######## Main Program ########
 # img, filename = get_img()
 
-# Temporary ######
+# Temporary for Debug #
 filename = "bauckhage.jpg"
 img = Image.open(filename)
 ######################
 
-
-filename_split = filename.split(".")    # split file name, ex: filename.txt -> var[0] = filename, var[1] = txt
-
+# Split file name, ex: filename.txt -> var[0] = filename, var[1] = txt
+filename_split = filename.split(".")    
 m_size = get_mask_size()
 
-print "Processing masks..."
+# Separating each task to calculate the run time of each process
+task1(img,m_size,filename_split)
+task2(img,m_size,filename_split)
+task3(img,m_size,filename_split)
 
-m_array = prepare_mask(m_size)
-m_array2 = prepare_mask_2(m_size)
-
-print "Processing Task 1.1..."
-
-image_result1 = image_function_task1(img, m_array, m_size)    # process the image
-new_filename1 = filename_split[0] + "-task1-1." + filename_split[1]    # create filename
-
-print "Processing Task 1.2..."
-
-image_result2 = image_function_task1(img, m_array2, m_size)
-new_filename2 = filename_split[0] + "-task1-2." + filename_split[1]    # create filename
-
-print "Processing Task 1.3..."
-
-image_result3 = image_function_task1_3(img, m_array, m_size)    # process the image
-new_filename3 = filename_split[0] + "-task1-3." + filename_split[1]    # create filename
-
-result1 = img_to_file(image_result1, new_filename1)    # save image from array
-result2 = img_to_file(image_result2, new_filename2)    # save image from array
-result3 = img_to_file(image_result3, new_filename3)    # save image from array
-
-
-
+#Plotting the graph of Average Run Time vs Mask Size
+task4(img)
 
 ######## End ########
