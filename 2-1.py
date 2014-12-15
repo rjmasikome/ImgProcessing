@@ -68,28 +68,20 @@ def prepare_mask(m_size):           # Task 1 Number 1
 
 def prepare_mask_2(m_size):             # Task 1 Number 2
     sigma = (m_size - 1.0) / (2.0 * 2.575)
-    m_array = np.zeros((m_size,m_size))
+    
+    m_array = np.zeros(m_size)
 
     const = 1 / (np.sqrt(2 * np.pi)* sigma)
 
     m_radius = m_size / 2;
     
     sum_gauss = 0
-    for y in range (m_size):
-        for x in range (m_size):
-            m_array[x,y] = const * np.exp(-1 * np.power(x - m_radius,2) / (2 *  sigma * sigma))
-            
-    for x in range (m_size):
-        for y in range (m_size):
-            m_array[x,y] *= const * np.exp(-1 * np.power(y - m_radius,2) / (2 *  sigma * sigma))
-            sum_gauss = sum_gauss + m_array[x,y]
-    
-    # normalize
-    for x in range(m_size):
-        for y in range(m_size):
-            m_array[x,y] = m_array[x,y] * (1 / sum_gauss)
-    return m_array
+    for i in xrange (m_size):
+        m_array[i] = const * np.exp(-1 * np.power(i - m_radius,2) / (2 *  sigma * sigma))
+        sum_gauss +=  m_array[i]  
+    m_array = m_array * (1 / sum_gauss)
 
+    return m_array
 
 def image_function_task1(img, m_array, m_size):
 
@@ -98,11 +90,12 @@ def image_function_task1(img, m_array, m_size):
 
     img_array = np.asarray(img)
     m_size_half = m_size / 2
+    
     output = np.lib.pad(img_array, ((m_size_half,m_size_half), (m_size_half,m_size_half)), 'edge')
     output.setflags(write=True)
-    output.shape
-    for y in xrange(m_size_half,height-m_size_half+1) :    # traverse and process pixels in image arrays row-wise
-        for x in xrange(m_size_half,width-m_size_half+1) :
+
+    for y in xrange(m_size_half,height+m_size_half) :    # traverse and process pixels in image arrays row-wise
+        for x in xrange(m_size_half,width+m_size_half) :
             sum_output = 0
             for j in xrange (-m_size_half,m_size_half+1) :
                 for i in xrange (-m_size_half,m_size_half+1) :
@@ -111,6 +104,25 @@ def image_function_task1(img, m_array, m_size):
             output[x,y] = sum_output
     return output[m_size_half:width+m_size_half,m_size_half:height+m_size_half]
 
+def image_function_task1_2(img, m_array, m_size):
+
+    width, height = img.size    # get width and height size
+    output = np.zeros(shape=(width,height), dtype=np.float)   # create new array 2d
+
+    # output_x = np.zeros(shape=(width,height), dtype=np.float)   # create new array 2d
+    # output_y = np.zeros(shape=(width,height), dtype=np.float)   # create new array 2d
+
+    img_array = np.asarray(img)
+    m_size_half = m_size / 2
+
+    # output_x = np.convolve(img, m_array, mode='full')
+    # output_y = no.convolve(img.T, m_array, mode='full')
+    for x in range(width):
+        output[x,:] = np.convolve(m_array,img_array[x,:], mode='full')
+    for y in range(height):
+        output[:,y] = np.convolve(m_array,img_array[:,y], mode='full')
+
+    return output
 
 def image_function_task1_3(img, m_array, m_size):
     img_array = np.asarray(img)
@@ -136,7 +148,6 @@ def image_function_task1_3(img, m_array, m_size):
     output = np.abs(new_ifou)
 
     return output[m_size:len(img_array_pad),m_size:len(img_array_pad)]
-
 
 def append_toFile(elapsed, m_size, taskNum):
     #
@@ -183,7 +194,7 @@ def task2(img,m_size,filename_split):
     print "Processing Task 1.2..."
     m_array = prepare_mask_2(m_size)
 
-    image_result2 = image_function_task1(img, m_array, m_size)
+    image_result2 = image_function_task1_2(img, m_array, m_size)
     new_filename2 = filename_split[0] + "-task1-2." + filename_split[1]    # create filename
 
     result2 = img_to_file(image_result2, new_filename2)    # save image from array
