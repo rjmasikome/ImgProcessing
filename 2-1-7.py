@@ -246,14 +246,13 @@ img = Image.open(filename)
 
 # Split file name, ex: filename.txt -> var[0] = filename, var[1] = txt
 filename_split = filename.split(".")    
-m_size = get_mask_size()
-
+m_size = 7
 # Separating each task to calculate the run time of each process
 task1(img,m_size,filename_split)
 task2(img,m_size,filename_split)
 task3(img,m_size,filename_split)
 
 #Plotting the graph of Average Run Time vs Mask Size
-task4(img)
+# task4(img)
 
 ######## End ########
