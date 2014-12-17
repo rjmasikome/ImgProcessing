@@ -102,25 +102,36 @@ def image_function_task1(img, m_array, m_size):
             output[x,y] = sum_output
     return output[m_size_half:width+m_size_half,m_size_half:height+m_size_half]
 
-def image_function_task1_2(img, m_array, m_size):
+def convolve1D(arr2,arr1,m_size,length,m_size_h):
+    # h = np.fliplr(arr2);
+    length_pad = length + m_size - 1
+
+    y = np.zeros(length_pad+m_size);
+    for i in xrange(length_pad):
+        y[i] = 0;
+        for j in xrange(m_size):
+            y[i] += arr1[i - j] * arr2[j];
+
+    return y[m_size_h:length+m_size_h]
+
+def image_function_task2(img, m_array, m_size):
 
     width, height = img.size    # get width and height size
     output = np.zeros(shape=(width,height), dtype=np.float)   # create new array 2d
 
-    # output_x = np.zeros(shape=(width,height), dtype=np.float)   # create new array 2d
-    # output_y = np.zeros(shape=(width,height), dtype=np.float)   # create new array 2d
-
     img_array = np.asarray(img)
     m_size_half = m_size / 2
 
-    # output_x = np.convolve(img, m_array, mode='full')
-    # output_y = no.convolve(img.T, m_array, mode='full')
+    image_buf = np.lib.pad(img_array, ((m_size_half,m_size_half), (m_size_half,m_size_half)), 'edge')
+    print output.shape
     for x in range(width):
-        output[x,:] = np.convolve(m_array,img_array[x,:], mode='same')
-    for y in range(height):
-        output[:,y] = np.convolve(m_array,img_array[:,y], mode='same')
+        output[x,:] = convolves1D(m_array,image_buf[x,:], m_size, width, m_size_half)
 
-    return output
+    output_buf = np.lib.pad(output, ((m_size_half,m_size_half), (m_size_half,m_size_half)), 'edge')
+    for y in range(height):
+        output[:,y] = convolves1D(m_array,output_buf[:,y], m_size, height, m_size_half)
+
+    return output 
 
 def image_function_task1_3(img, m_array, m_size):
     img_array = np.asarray(img)
