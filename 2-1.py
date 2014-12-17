@@ -51,35 +51,23 @@ def img_to_file(img, filename):
     return output
 
 def prepare_mask(m_size):           # Task 1 Number 1
-    sigma = (m_size - 1.0) / (2.0 * 2.575)
-    m_array = np.zeros((m_size,m_size))
-    const = 1 / (2 * np.pi * sigma * sigma)
-
-    m_radius = m_size / 2;
-    sum_gauss = 0
-    for x in range (m_size):
-        for y in range (m_size):
-            m_array[x,y] = const * np.exp(-1 * (np.power(x - m_radius,2)+np.power(y - m_radius,2)) / (2 *  sigma * sigma))
-            sum_gauss = sum_gauss + m_array[x,y]
-    # normalize
-    for x in range(m_size):
-        for y in range(m_size):
-            m_array[x,y] = m_array[x,y] * (1 / sum_gauss)
-    return m_array
+    shape=(m_size,m_size)
+    sigma=(m_size-1.)/(2.*2.575)
+    m,n = [(ss-1.)/2. for ss in shape]
+    y,x = np.ogrid[-m:m+1,-n:n+1]
+    h = np.exp( -(x*x + y*y) / (2.*sigma*sigma) )
+    h[ h < np.finfo(h.dtype).eps*h.max() ] = 0
+    h = h/h.sum()
+    return h
 
 def prepare_mask_2(m_size):             # Task 1 Number 2
     sigma = (m_size - 1.0) / (2.0 * 2.575)
     m_array = np.zeros(m_size)
     const = 1 / (np.sqrt(2 * np.pi)* sigma)
     m_radius = m_size / 2;
-    
-    sum_gauss = 0
-    for i in xrange (m_size):
-        m_array[i] = const * np.exp(-1 * np.power(i - m_radius,2) / (2 *  sigma * sigma))
-        sum_gauss +=  m_array[i]  
-    
-    m_array = m_array * (1 / sum_gauss)
-
+    x= np.ogrid[-m_radius:m_radius+1]
+    m_array = const * np.exp(-1 * np.power(x,2) / (2 *  sigma * sigma))
+    m_array = m_array / m_array.sum()
     return m_array
 
 def image_function_task1(img, m_array, m_size):
@@ -103,35 +91,28 @@ def image_function_task1(img, m_array, m_size):
             output[x,y] = sum_output
     return output[m_size_half:width+m_size_half,m_size_half:height+m_size_half]
 
-def convolve1D(arr2,arr1,m_size,length,m_size_h):
-    # h = np.fliplr(arr2);
+def convolve1D(arr2,arr1,m_size,length):
     length_pad = length + m_size - 1
-
-    y = np.zeros(length_pad+m_size);
+    y = np.zeros(length_pad+m_size)
     for i in xrange(length_pad):
         y[i] = 0;
         for j in xrange(m_size):
-            y[i] += arr1[i - j] * arr2[j];
-
-    return y[m_size:length+m_size]
+            y[i] += arr1[i - j] * arr2[j]
+    return y[0:length_pad]
 
 def image_function_task1_2(img, m_array, m_size):
-
-    width, height = img.size    # get width and height size
-    output = np.zeros(shape=(width,height), dtype=np.float)   # create new array 2d
+    width, height = img.size
+    output = np.zeros(shape=(width,height), dtype=np.float)   
 
     img_array = np.asarray(img)
     m_size_half = m_size / 2
-
-    image_buf = np.lib.pad(img_array, ((m_size_half,m_size_half), (m_size_half,m_size_half)), 'edge')
+    output = np.lib.pad(img_array, ((m_size_half,m_size_half), (m_size_half,m_size_half)), 'edge')
+    print output.shape
     for x in range(width):
-        output[x,:] = convolve1D(m_array,image_buf[x,:], m_size, width, m_size_half)
-
-    output_buf = np.lib.pad(output, ((m_size_half,m_size_half), (m_size_half,m_size_half)), 'edge')
+        output[x,:] = convolves(m_array,output[x,:], m_size, width)
     for y in range(height):
-        output[:,y] = convolve1D(m_array,output_buf[:,y], m_size, height, m_size_half)
-
-    return output 
+        output[:,y] = convolves(m_array,output[:,y], m_size, height)
+    return output[m_size:width+m_size,m_size:height+m_size] 
 
 def image_function_task1_3(img, m_array, m_size):
     img_array = np.asarray(img)
