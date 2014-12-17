@@ -9,7 +9,7 @@ sed -i '/img, filename = get_img()/c\# img, filename = get_img()' 2-1.py
 sed -i '/#filename = \"bauckhage.jpg\"/c\filename = \"bauckhage.jpg\"' 2-1.py
 sed -i '/#img = Image.open(filename)/c\img = Image.open(filename)' 2-1.py
 
-for i in {1..2}
+for i in {1..10}
 do
    sed -i '/m_size = get_mask_size()/c\m_size = 3' 2-1.py
    python 2-1.py
