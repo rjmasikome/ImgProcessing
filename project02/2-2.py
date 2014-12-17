@@ -1,7 +1,6 @@
 import Image
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy.ndimage as nd
 import scipy.signal as sg
 
 def normalize(number):
@@ -80,15 +79,14 @@ def getgaussderiv1d(input1d):
     return output
 
 def getgaussderiv2d(input2d):
-
     [width, height] = input2d.shape
     outputX = np.zeros(shape=(width,height), dtype=np.float)
     outputY = np.zeros(shape=(width,height), dtype=np.float)
     for x in range(width):
         outputX[x,:] = np.convolve(input2d[x,:], [1, 0, -1],mode="same")
 
-    for x in range(height):
-        outputY[:,x] = np.convolve(input2d[:,x], [1,0, -1],mode="same")
+    for y in range(height):
+        outputY[:,y] = np.convolve(input2d[:,y], [1,0, -1],mode="same")
     return [outputX, outputY]
 
 
@@ -124,22 +122,13 @@ for y in range(width):
     grady[y,:] = np.convolve(gauss1,img_array[y,:], mode='same')
 for y in range(height):
     grady[:,y] = np.convolve(gaussderiv,grady[:,y], mode='same')
-gradmag = np.sqrt(gradx**2 + grady**2)
+gradmag1 = np.sqrt(gradx**2 + grady**2)
 
 
 #save into a jpeg file
-gradmag_norm = normalize(gradmag)
+gradmag_norm1 = normalize(gradmag1)
 new_filename = filename_split[0] + "-task2_gauss1d." + filename_split[1]    # create filename
-result = img_to_file(gradmag_norm, new_filename)
-
-#####
-# #TEMPORARY (for DEBUG purpose only)
-plt.subplot(221),plt.imshow(img, cmap = 'gray')
-plt.subplot(222),plt.imshow(gradmag, cmap = 'gray')
-plt.subplot(223),plt.imshow(gradx, cmap = 'gray')
-plt.subplot(224),plt.imshow(grady, cmap = 'gray')
-plt.show()
-######
+result = img_to_file(gradmag_norm1, new_filename)
 
 #==================
 #gauss 2d
@@ -150,12 +139,26 @@ gauss2 = getgauss2D(size)
 grady=sg.convolve2d(img,gaussderiv2X)
 gradx=sg.convolve2d(img,gaussderiv2Y)
 
-gradmag_norm = normalize(gradmag)
+gradmag2 = np.sqrt(gradx**2 + grady**2)
+gradmag_norm2 = normalize(gradmag2)
 new_filename = filename_split[0] + "-task2_gauss2d." + filename_split[1]    # create filename
-result = img_to_file(gradmag_norm, new_filename)
+result = img_to_file(gradmag_norm2, new_filename)
 
 
+######
+## Plot the results
+plt.figure(1)
+plt.suptitle('Derivative of An Image (convolve using 1D Gaussian)')
+plt.subplot(221),plt.imshow(img, cmap = 'gray'), plt.title('Original Images')
+plt.subplot(222),plt.imshow(gradmag1, cmap = 'gray'), plt.title('Gradient Magnitude Images')
+plt.subplot(223),plt.imshow(gradx, cmap = 'gray'), plt.title('Derivative in X direction')
+plt.subplot(224),plt.imshow(grady, cmap = 'gray'), plt.title('Derivative in Y direction')
 
-#####
-
+plt.figure(2)
+plt.suptitle('Comparison between convolution using 1D Gaussian and 2D Gaussian')
+plt.subplot(131),plt.imshow(img, cmap = 'gray'), plt.title('Original Images')
+plt.subplot(132),plt.imshow(gradmag1, cmap = 'gray'), plt.title('Using 1D Gaussian')
+plt.subplot(133),plt.imshow(gradmag2, cmap = 'gray'), plt.title('Using 2D Gaussian')
+plt.show()
+######
 
