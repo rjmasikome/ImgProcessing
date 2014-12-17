@@ -1,4 +1,4 @@
-from PIL import Image
+import Image
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.ndimage as nd
@@ -76,32 +76,32 @@ def getgauss1D(m_size):
     return m_array
 
 def getgaussderiv1d(input1d):
-    output = np.convolve(input1d, [1, -1],mode="same")
+    output = np.convolve(input1d, [1, 0, -1],mode="same")
     return output
 
 def getgaussderiv2d(input2d):
 
-    x = input2d
-    y = np.empty_like(x)
-    y[:, :-1] = (x[:, 1:] - x[:, :-1])
-    y[:, -1] = -x[:, -1]
-
-    z = np.empty_like(x)
-    z[:-1,: ] = (x[1:, :] - x[:-1, :])
-    z[-1,: ] = -x[-1, :]
-    return y,z
-
-    # [width, height] = input2d.shape
-    # outputX = np.zeros(shape=(width,height), dtype=np.float)
-    # outputY = np.zeros(shape=(width,height), dtype=np.float)
-    # for x in range(width):
-    #     #outputX[x,:] = np.convolve(input2d[x,:], [1, -1],mode="same")
-    #     outputX[x,:] = np.convolve(input2d[x,:], [1, 0, -1],mode="same")
+    # x = input2d
+    # y = np.empty_like(x)
+    # y[:, :-1] = (x[:, 1:] - x[:, :-1])
+    # y[:, -1] = -x[:, -1]
     #
-    # for x in range(height):
-    #     # outputY[:,x] = np.convolve(input2d[:,x], [1, -1],mode="same")
-    #     outputY[:,x] = np.convolve(input2d[:,x], [1,0, -1],mode="same")
-    #return [outputX, outputY]
+    # z = np.empty_like(x)
+    # z[:-1,: ] = (x[1:, :] - x[:-1, :])
+    # z[-1,: ] = -x[-1, :]
+    # return y,z
+
+    [width, height] = input2d.shape
+    outputX = np.zeros(shape=(width,height), dtype=np.float)
+    outputY = np.zeros(shape=(width,height), dtype=np.float)
+    for x in range(width):
+        #outputX[x,:] = np.convolve(input2d[x,:], [1, -1],mode="same")
+        outputX[x,:] = np.convolve(input2d[x,:], [1, 0, -1],mode="same")
+
+    for x in range(height):
+        # outputY[:,x] = np.convolve(input2d[:,x], [1, -1],mode="same")
+        outputY[:,x] = np.convolve(input2d[:,x], [1,0, -1],mode="same")
+    return [outputX, outputY]
 
 
 ######## Main Program ########
