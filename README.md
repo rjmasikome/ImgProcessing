@@ -1,4 +1,0 @@
-ImgProcessing
-=============
-
-Image Processing

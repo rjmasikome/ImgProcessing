@@ -107,11 +107,10 @@ def image_function_task1_2(img, m_array, m_size):
     img_array = np.asarray(img)
     m_size_half = m_size / 2
     output = np.lib.pad(img_array, ((m_size_half,m_size_half), (m_size_half,m_size_half)), 'edge')
-    print output.shape
     for x in range(width):
-        output[x,:] = convolves(m_array,output[x,:], m_size, width)
+        output[x,:] = convolve1D(m_array,output[x,:], m_size, width)
     for y in range(height):
-        output[:,y] = convolves(m_array,output[:,y], m_size, height)
+        output[:,y] = convolve1D(m_array,output[:,y], m_size, height)
     return output[m_size:width+m_size,m_size:height+m_size] 
 
 def image_function_task1_3(img, m_array, m_size):
@@ -125,14 +124,14 @@ def image_function_task1_3(img, m_array, m_size):
     pad_value = len(img_array_pad) - m_size
 
     m_array_pad = np.lib.pad(m_array, ((0,pad_value), (0,pad_value)), 'constant', constant_values=0)
-    img_fft = np.fft.fft2(img_array_pad)    
+
+    img_fft = np.fft.fft2(img_array_pad)
     m_fft = np.fft.fft2(m_array_pad)
-    mul_fft = img_fft*m_fft
     
+    mul_fft = img_fft*m_fft
 
     #Apply inverse FFT to the new complex function
     new_ifou = np.fft.ifft2(mul_fft)
-    
 
     #Find the magnitude part of the inversed function to build the image
     output = np.abs(new_ifou)
@@ -184,10 +183,10 @@ def getMaskArray(taskNum):
     return filelist
 
 def task1(img,m_size,filename_split):
-    start = time.time()
     print "Processing Task 1.1..."
     m_array = prepare_mask(m_size)
 
+    start = time.time()
     image_result1 = image_function_task1(img, m_array, m_size)    # process the image
     new_filename1 = filename_split[0] + "-task1-1." + filename_split[1]    # create filename
     result1 = img_to_file(image_result1, new_filename1)    # save image from array
@@ -198,10 +197,11 @@ def task1(img,m_size,filename_split):
 
 
 def task2(img,m_size,filename_split):
-    start = time.time()
+    
     print "Processing Task 1.2..."
     m_array = prepare_mask_2(m_size)
 
+    start = time.time()
     image_result2 = image_function_task1_2(img, m_array, m_size)
     new_filename2 = filename_split[0] + "-task1-2." + filename_split[1]    # create filename
 
@@ -213,10 +213,11 @@ def task2(img,m_size,filename_split):
 
 
 def task3(img,m_size,filename_split):
-    start = time.time()
+    
     print "Processing Task 1.3..."
     m_array = prepare_mask(m_size)
 
+    start = time.time()
     image_result3 = image_function_task1_3(img, m_array, m_size)    # process the image
     new_filename3 = filename_split[0] + "-task1-3." + filename_split[1]    # create filename
 
@@ -242,17 +243,18 @@ def task4(image):
 
     #Plotting using pyplot
     plt.figure("Running Time vs Mask Size")
-    plt.subplot(221),plt.title("Original Image"),plt.imshow(image, cmap = 'gray')
-    plt.subplot(222),plt.title("Task 1 Runtime"),plt.ylabel("Time(s)"),plt.plot(maskList1,averageArray1, '-o')
-    plt.subplot(223),plt.title("Task 2 Runtime"),plt.xlabel("Mask Size"),plt.ylabel("Time(s)"),plt.plot(maskList2,averageArray2, '-o')
-    plt.subplot(224),plt.title("Task 3 Runtime"),plt.xlabel("Mask Size"),plt.ylabel("Time(s)"),plt.plot(maskList3,averageArray3, '-o')
+    plt.xlabel("Mask Size")
+    plt.ylabel("Runtime(s)")
+    plt.plot(maskList1,averageArray1, '-o')
+    plt.plot(maskList2,averageArray2, '-o')
+    plt.plot(maskList3,averageArray3, '-o')
 
     plt.show()
 
 ######## Main Program ########
 img, filename = get_img()
 
-##This field is for data generation genData.sh and debugging
+##This field is for data generation genData.sh and debug
 #filename = "bauckhage.jpg"
 #img = Image.open(filename)
 
