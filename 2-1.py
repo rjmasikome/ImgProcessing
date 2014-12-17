@@ -113,7 +113,7 @@ def convolve1D(arr2,arr1,m_size,length,m_size_h):
         for j in xrange(m_size):
             y[i] += arr1[i - j] * arr2[j];
 
-    return y[m_size_h:length+m_size_h]
+    return y[m_size:length+m_size]
 
 def image_function_task1_2(img, m_array, m_size):
 
@@ -184,7 +184,9 @@ def getAverage(taskNum, maskArray):
     return averageArray
 
 def getMaskArray(taskNum):
-    fullname = os.listdir("data2")
+    dirName = "data" + str(taskNum)
+
+    fullname = os.listdir(dirName)
     filelist = []
     for x in range(len(fullname)):
         fileName= os.path.splitext(fullname[x-1])[0]
