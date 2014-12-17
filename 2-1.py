@@ -107,6 +107,7 @@ def image_function_task1_2(img, m_array, m_size):
     img_array = np.asarray(img)
     m_size_half = m_size / 2
     output = np.lib.pad(img_array, ((m_size_half,m_size_half), (m_size_half,m_size_half)), 'edge')
+    print output.shape
     for x in range(width):
         output[x,:] = convolve1D(m_array,output[x,:], m_size, width)
     for y in range(height):
@@ -142,11 +143,6 @@ def append_toFile(elapsed, m_size, taskNum):
     #
     # This function is for saving the runtime to File
     #
-    directory = "data"+str(taskNum)
-
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-
     outputName = "data"+ str(taskNum) +"/"+ str(m_size) + ".txt"
     with open(outputName, "a") as myfile:
         myfile.write(str(elapsed)+';')
@@ -183,10 +179,10 @@ def getMaskArray(taskNum):
     return filelist
 
 def task1(img,m_size,filename_split):
+    start = time.time()
     print "Processing Task 1.1..."
     m_array = prepare_mask(m_size)
 
-    start = time.time()
     image_result1 = image_function_task1(img, m_array, m_size)    # process the image
     new_filename1 = filename_split[0] + "-task1-1." + filename_split[1]    # create filename
     result1 = img_to_file(image_result1, new_filename1)    # save image from array
@@ -195,15 +191,12 @@ def task1(img,m_size,filename_split):
     print "Elapsed time: " + str(elapsed)
     append_toFile(elapsed,m_size,1)
 
-    return image_result1
-
 
 def task2(img,m_size,filename_split):
-    
+    start = time.time()
     print "Processing Task 1.2..."
     m_array = prepare_mask_2(m_size)
 
-    start = time.time()
     image_result2 = image_function_task1_2(img, m_array, m_size)
     new_filename2 = filename_split[0] + "-task1-2." + filename_split[1]    # create filename
 
@@ -213,15 +206,12 @@ def task2(img,m_size,filename_split):
     print "Elapsed time: " + str(elapsed)
     append_toFile(elapsed,m_size,2)
 
-    return image_result2
-
 
 def task3(img,m_size,filename_split):
-    
+    start = time.time()
     print "Processing Task 1.3..."
     m_array = prepare_mask(m_size)
 
-    start = time.time()
     image_result3 = image_function_task1_3(img, m_array, m_size)    # process the image
     new_filename3 = filename_split[0] + "-task1-3." + filename_split[1]    # create filename
 
@@ -231,10 +221,8 @@ def task3(img,m_size,filename_split):
     print "Elapsed time: " + str(elapsed)
     append_toFile(elapsed,m_size,3)
 
-    return image_result3
 
-
-def task4(image1, image2, image3):
+def task4(image):
 
     # The Array of mask size
     # Get the mask list from each task 1 to task 3
@@ -248,32 +236,32 @@ def task4(image1, image2, image3):
     averageArray3 = getAverage(3, maskList3)
 
     #Plotting using pyplot
-    plt.figure("Result and Runtime comparison")
-    plt.subplot(221),plt.title("Naive Convolution"),plt.imshow(image1, cmap = 'gray')
-    plt.subplot(222),plt.title("Separable Convolution"),plt.imshow(image2, cmap = 'gray')
-    plt.subplot(223),plt.title("Separable FFT"),plt.imshow(image3, cmap = 'gray')
-    plt.subplot(224),plt.title("Runtime"),plt.xlabel("Mask Size"),plt.ylabel("Time(s)"),plt.plot(maskList1,averageArray1, '-o', label="Naive"),plt.plot(maskList2,averageArray2, '-o', label="Separable"),plt.plot(maskList3,averageArray3, '-o', label="FFT"),plt.legend(loc='upper left')
+    plt.figure("Running Time vs Mask Size")
+    plt.subplot(221),plt.title("Original Image"),plt.imshow(image, cmap = 'gray')
+    plt.subplot(222),plt.title("Task 1 Runtime"),plt.ylabel("Time(s)"),plt.plot(maskList1,averageArray1, '-o')
+    plt.subplot(223),plt.title("Task 2 Runtime"),plt.xlabel("Mask Size"),plt.ylabel("Time(s)"),plt.plot(maskList2,averageArray2, '-o')
+    plt.subplot(224),plt.title("Task 3 Runtime"),plt.xlabel("Mask Size"),plt.ylabel("Time(s)"),plt.plot(maskList3,averageArray3, '-o')
+
     plt.show()
 
 ######## Main Program ########
-img, filename = get_img()
+# img, filename = get_img()
 
-##This field is for data generation genData.sh and debug
-#filename = "bauckhage.jpg"
-#img = Image.open(filename)
+# Temporary for Debug #
+filename = "bauckhage.jpg"
+img = Image.open(filename)
+######################
 
 # Split file name, ex: filename.txt -> var[0] = filename, var[1] = txt
 filename_split = filename.split(".")    
 m_size = get_mask_size()
 
-print "Using mask size " + str(m_size) + "x" + str(m_size)
-
 # Separating each task to calculate the run time of each process
-img1 = task1(img,m_size,filename_split)
-img2 = task2(img,m_size,filename_split)
-img3 = task3(img,m_size,filename_split)
+task1(img,m_size,filename_split)
+task2(img,m_size,filename_split)
+task3(img,m_size,filename_split)
 
 #Plotting the graph of Average Run Time vs Mask Size
-task4(img1, img2, img3)
+task4(img)
 
 ######## End ########
