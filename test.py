@@ -103,35 +103,25 @@ def image_function_task1(img, m_array, m_size):
             output[x,y] = sum_output
     return output[m_size_half:width+m_size_half,m_size_half:height+m_size_half]
 
-def convolve1D(arr2,arr1,m_size,length,m_size_h):
-    # h = np.fliplr(arr2);
-    length_pad = length + m_size - 1
-
-    y = np.zeros(length_pad+m_size);
-    for i in xrange(length_pad):
-        y[i] = 0;
-        for j in xrange(m_size):
-            y[i] += arr1[i - j] * arr2[j];
-
-    return y[m_size_h:length+m_size_h]
-
 def image_function_task1_2(img, m_array, m_size):
 
     width, height = img.size    # get width and height size
     output = np.zeros(shape=(width,height), dtype=np.float)   # create new array 2d
 
+    # output_x = np.zeros(shape=(width,height), dtype=np.float)   # create new array 2d
+    # output_y = np.zeros(shape=(width,height), dtype=np.float)   # create new array 2d
+
     img_array = np.asarray(img)
     m_size_half = m_size / 2
 
-    image_buf = np.lib.pad(img_array, ((m_size_half,m_size_half), (m_size_half,m_size_half)), 'edge')
+    # output_x = np.convolve(img, m_array, mode='full')
+    # output_y = no.convolve(img.T, m_array, mode='full')
     for x in range(width):
-        output[x,:] = convolve1D(m_array,image_buf[x,:], m_size, width, m_size_half)
-
-    output_buf = np.lib.pad(output, ((m_size_half,m_size_half), (m_size_half,m_size_half)), 'edge')
+        output[x,:] = np.convolve(m_array,output[x,:], mode='same')
     for y in range(height):
-        output[:,y] = convolve1D(m_array,output_buf[:,y], m_size, height, m_size_half)
+        output[:,y] = np.convolve(m_array,output[:,y], mode='same')
 
-    return output 
+    return output
 
 def image_function_task1_3(img, m_array, m_size):
     img_array = np.asarray(img)
@@ -162,6 +152,11 @@ def append_toFile(elapsed, m_size, taskNum):
     #
     # This function is for saving the runtime to File
     #
+    directory = "data"+str(taskNum)
+
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
     outputName = "data"+ str(taskNum) +"/"+ str(m_size) + ".txt"
     with open(outputName, "a") as myfile:
         myfile.write(str(elapsed)+';')
@@ -173,6 +168,7 @@ def getAverage(taskNum, maskArray):
     # Read the whole row and parse it to float
     # and also filter out Empty string
     #
+
     averageArray = []
     for mask in maskArray :
         filename = "data"+ str(taskNum) +"/" + str(mask) + ".txt"
@@ -194,6 +190,7 @@ def getMaskArray(taskNum):
     filelist.sort()
 
     return filelist
+
 
 def task1(img,m_size,filename_split):
     start = time.time()
@@ -242,15 +239,20 @@ def task3(img,m_size,filename_split):
 def task4(image):
 
     # The Array of mask size
-    # Get the mask list from each task 1 to task 3
+    # maskArray = [3,5,7,9,11,13,15,17,19,21]
+
     maskList1 = getMaskArray(1)
     maskList2 = getMaskArray(2)
     maskList3 = getMaskArray(3)
+
+    print maskList1
 
     # Get the Array of average runtime for each task
     averageArray1 = getAverage(1, maskList1)
     averageArray2 = getAverage(2, maskList2)
     averageArray3 = getAverage(3, maskList3)
+
+
 
     #Plotting using pyplot
     plt.figure("Running Time vs Mask Size")
