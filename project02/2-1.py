@@ -5,6 +5,7 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt #use for debugging
 import csv
+import os
 
 def get_img():
 #
@@ -50,35 +51,23 @@ def img_to_file(img, filename):
     return output
 
 def prepare_mask(m_size):           # Task 1 Number 1
-    sigma = (m_size - 1.0) / (2.0 * 2.575)
-    m_array = np.zeros((m_size,m_size))
-    const = 1 / (2 * np.pi * sigma * sigma)
-
-    m_radius = m_size / 2;
-    sum_gauss = 0
-    for x in range (m_size):
-        for y in range (m_size):
-            m_array[x,y] = const * np.exp(-1 * (np.power(x - m_radius,2)+np.power(y - m_radius,2)) / (2 *  sigma * sigma))
-            sum_gauss = sum_gauss + m_array[x,y]
-    # normalize
-    for x in range(m_size):
-        for y in range(m_size):
-            m_array[x,y] = m_array[x,y] * (1 / sum_gauss)
-    return m_array
+    shape=(m_size,m_size)
+    sigma=(m_size-1.)/(2.*2.575)
+    m,n = [(ss-1.)/2. for ss in shape]
+    y,x = np.ogrid[-m:m+1,-n:n+1]
+    h = np.exp( -(x*x + y*y) / (2.*sigma*sigma) )
+    h[ h < np.finfo(h.dtype).eps*h.max() ] = 0
+    h = h/h.sum()
+    return h
 
 def prepare_mask_2(m_size):             # Task 1 Number 2
     sigma = (m_size - 1.0) / (2.0 * 2.575)
     m_array = np.zeros(m_size)
     const = 1 / (np.sqrt(2 * np.pi)* sigma)
     m_radius = m_size / 2;
-    
-    sum_gauss = 0
-    for i in xrange (m_size):
-        m_array[i] = const * np.exp(-1 * np.power(i - m_radius,2) / (2 *  sigma * sigma))
-        sum_gauss +=  m_array[i]  
-    
-    m_array = m_array * (1 / sum_gauss)
-
+    x= np.ogrid[-m_radius:m_radius+1]
+    m_array = const * np.exp(-1 * np.power(x,2) / (2 *  sigma * sigma))
+    m_array = m_array / m_array.sum()
     return m_array
 
 def image_function_task1(img, m_array, m_size):
@@ -102,25 +91,28 @@ def image_function_task1(img, m_array, m_size):
             output[x,y] = sum_output
     return output[m_size_half:width+m_size_half,m_size_half:height+m_size_half]
 
+def convolve1D(arr2,arr1,m_size,length):
+    length_pad = length + m_size - 1
+    y = np.zeros(length_pad+m_size)
+    for i in xrange(length_pad):
+        y[i] = 0;
+        for j in xrange(m_size):
+            y[i] += arr1[i - j] * arr2[j]
+    return y[0:length_pad]
+
 def image_function_task1_2(img, m_array, m_size):
-
-    width, height = img.size    # get width and height size
-    output = np.zeros(shape=(width,height), dtype=np.float)   # create new array 2d
-
-    # output_x = np.zeros(shape=(width,height), dtype=np.float)   # create new array 2d
-    # output_y = np.zeros(shape=(width,height), dtype=np.float)   # create new array 2d
+    width, height = img.size
+    output = np.zeros(shape=(width,height), dtype=np.float)   
 
     img_array = np.asarray(img)
     m_size_half = m_size / 2
-
-    # output_x = np.convolve(img, m_array, mode='full')
-    # output_y = no.convolve(img.T, m_array, mode='full')
+    output = np.lib.pad(img_array, ((m_size_half,m_size_half), (m_size_half,m_size_half)), 'edge')
+    print output.shape
     for x in range(width):
-        output[x,:] = np.convolve(m_array,img_array[x,:], mode='same')
+        output[x,:] = convolves(m_array,output[x,:], m_size, width)
     for y in range(height):
-        output[:,y] = np.convolve(m_array,img_array[:,y], mode='same')
-
-    return output
+        output[:,y] = convolves(m_array,output[:,y], m_size, height)
+    return output[m_size:width+m_size,m_size:height+m_size] 
 
 def image_function_task1_3(img, m_array, m_size):
     img_array = np.asarray(img)
@@ -133,14 +125,14 @@ def image_function_task1_3(img, m_array, m_size):
     pad_value = len(img_array_pad) - m_size
 
     m_array_pad = np.lib.pad(m_array, ((0,pad_value), (0,pad_value)), 'constant', constant_values=0)
-
-    img_fft = np.fft.fft2(img_array_pad)
+    img_fft = np.fft.fft2(img_array_pad)    
     m_fft = np.fft.fft2(m_array_pad)
-    
     mul_fft = img_fft*m_fft
+    
 
     #Apply inverse FFT to the new complex function
     new_ifou = np.fft.ifft2(mul_fft)
+    
 
     #Find the magnitude part of the inversed function to build the image
     output = np.abs(new_ifou)
@@ -151,6 +143,11 @@ def append_toFile(elapsed, m_size, taskNum):
     #
     # This function is for saving the runtime to File
     #
+    directory = "data"+str(taskNum)
+
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
     outputName = "data"+ str(taskNum) +"/"+ str(m_size) + ".txt"
     with open(outputName, "a") as myfile:
         myfile.write(str(elapsed)+';')
@@ -172,6 +169,19 @@ def getAverage(taskNum, maskArray):
 
     return averageArray
 
+def getMaskArray(taskNum):
+    dirName = "data" + str(taskNum)
+
+    fullname = os.listdir(dirName)
+    filelist = []
+    for x in range(len(fullname)):
+        fileName= os.path.splitext(fullname[x-1])[0]
+        filelist.append(fileName)
+
+    filelist = [int(i) for i in filelist]
+    filelist.sort()
+
+    return filelist
 
 def task1(img,m_size,filename_split):
     start = time.time()
@@ -220,33 +230,37 @@ def task3(img,m_size,filename_split):
 def task4(image):
 
     # The Array of mask size
-    maskArray = [3,5,7,9,11,13,15,17,19,21]
+    # Get the mask list from each task 1 to task 3
+    maskList1 = getMaskArray(1)
+    maskList2 = getMaskArray(2)
+    maskList3 = getMaskArray(3)
 
     # Get the Array of average runtime for each task
-    averageArray1 = getAverage(1, maskArray)
-    averageArray2 = getAverage(2, maskArray)
-    averageArray3 = getAverage(3, maskArray)
+    averageArray1 = getAverage(1, maskList1)
+    averageArray2 = getAverage(2, maskList2)
+    averageArray3 = getAverage(3, maskList3)
 
     #Plotting using pyplot
     plt.figure("Running Time vs Mask Size")
     plt.subplot(221),plt.title("Original Image"),plt.imshow(image, cmap = 'gray')
-    plt.subplot(222),plt.title("Task 1 Runtime"),plt.ylabel("Time(s)"),plt.plot(maskArray,averageArray1, '-o')
-    plt.subplot(223),plt.title("Task 2 Runtime"),plt.xlabel("Mask Size"),plt.ylabel("Time(s)"),plt.plot(maskArray,averageArray2, '-o')
-    plt.subplot(224),plt.title("Task 3 Runtime"),plt.xlabel("Mask Size"),plt.ylabel("Time(s)"),plt.plot(maskArray,averageArray3, '-o')
+    plt.subplot(222),plt.title("Task 1 Runtime"),plt.ylabel("Time(s)"),plt.plot(maskList1,averageArray1, '-o')
+    plt.subplot(223),plt.title("Task 2 Runtime"),plt.xlabel("Mask Size"),plt.ylabel("Time(s)"),plt.plot(maskList2,averageArray2, '-o')
+    plt.subplot(224),plt.title("Task 3 Runtime"),plt.xlabel("Mask Size"),plt.ylabel("Time(s)"),plt.plot(maskList3,averageArray3, '-o')
 
     plt.show()
 
 ######## Main Program ########
-# img, filename = get_img()
+img, filename = get_img()
 
-# Temporary for Debug #
-filename = "bauckhage.jpg"
-img = Image.open(filename)
-######################
+##This field is for data generation genData.sh and debugging
+#filename = "bauckhage.jpg"
+#img = Image.open(filename)
 
 # Split file name, ex: filename.txt -> var[0] = filename, var[1] = txt
 filename_split = filename.split(".")    
-m_size = 11
+m_size = get_mask_size()
+
+print "Using mask size " + str(m_size) + "x" + str(m_size)
 
 # Separating each task to calculate the run time of each process
 task1(img,m_size,filename_split)
@@ -254,6 +268,6 @@ task2(img,m_size,filename_split)
 task3(img,m_size,filename_split)
 
 #Plotting the graph of Average Run Time vs Mask Size
-# task4(img)
+task4(img)
 
 ######## End ########
