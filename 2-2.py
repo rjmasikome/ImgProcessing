@@ -56,10 +56,6 @@ def img_to_file(img, filename):
 
 
 def getgauss2D(size):
-    """
-    2D gaussian mask - should give the same result as MATLAB's
-    fspecial('gaussian',[shape],[sigma])
-    """
     shape=(size,size)
     sigma=(size-1.)/(2.*2.575)
     m,n = [(ss-1.)/2. for ss in shape]
@@ -69,36 +65,15 @@ def getgauss2D(size):
     h = h/h.sum()
     return h
 
-def getgauss1D(m_size):             # Task 1 Number 2
+def getgauss1D(m_size):
     sigma = (m_size - 1.0) / (2.0 * 2.575)
     m_array = np.zeros(m_size)
     const = 1 / (np.sqrt(2 * np.pi)* sigma)
     m_radius = m_size / 2;
-
-    sum_gauss = 0
-    for i in xrange (m_size):
-        m_array[i] = const * np.exp(-1 * np.power(i - m_radius,2) / (2 *  sigma * sigma))
-        sum_gauss +=  m_array[i]
-
-    m_array = m_array * (1 / sum_gauss)
-
+    x= np.ogrid[-m_radius:m_radius+1]
+    m_array = const * np.exp(-1 * np.power(x,2) / (2 *  sigma * sigma))
+    m_array = m_array / m_array.sum()
     return m_array
-
-# def getgauss1D(size):
-#     sigma =(size-1.0)/(2.0*2.575)
-#     halfsize = np.floor(size/2.0)
-#     x= np.ogrid[-halfsize:halfsize+1]
-#     h = np.exp(-x**2/(2.0*np.pi**2))
-#     h[ h < np.finfo(h.dtype).eps*h.max() ] = 0
-#     h = h/h.sum()
-#     #h = h / (np.sqrt(2.0*np.pi)*sigma) #norm1
-#     #h2 = h
-#     #print h1
-#     #print h2
-#     #plt.plot(x,h1)
-#     #plt.plot(x,h2)
-#     #plt.show()
-#     return h
 
 def getgaussderiv1d(input1d):
     output = np.convolve(input1d, [1, -1],mode="same")
