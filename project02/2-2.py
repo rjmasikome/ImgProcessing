@@ -81,25 +81,13 @@ def getgaussderiv1d(input1d):
 
 def getgaussderiv2d(input2d):
 
-    # x = input2d
-    # y = np.empty_like(x)
-    # y[:, :-1] = (x[:, 1:] - x[:, :-1])
-    # y[:, -1] = -x[:, -1]
-    #
-    # z = np.empty_like(x)
-    # z[:-1,: ] = (x[1:, :] - x[:-1, :])
-    # z[-1,: ] = -x[-1, :]
-    # return y,z
-
     [width, height] = input2d.shape
     outputX = np.zeros(shape=(width,height), dtype=np.float)
     outputY = np.zeros(shape=(width,height), dtype=np.float)
     for x in range(width):
-        #outputX[x,:] = np.convolve(input2d[x,:], [1, -1],mode="same")
         outputX[x,:] = np.convolve(input2d[x,:], [1, 0, -1],mode="same")
 
     for x in range(height):
-        # outputY[:,x] = np.convolve(input2d[:,x], [1, -1],mode="same")
         outputY[:,x] = np.convolve(input2d[:,x], [1,0, -1],mode="same")
     return [outputX, outputY]
 
@@ -169,14 +157,5 @@ result = img_to_file(gradmag_norm, new_filename)
 
 
 #####
-# #TEMPORARY (for DEBUG purpose only)
-# gauss2d = np.zeros(shape=(size,size), dtype=np.float)
-# a = np.outer(gauss1, gauss1)
-# gauss2d = a / a.sum()
-# print "gauss2d from 1d"
-# print gauss2d
-# print "\n"
-# print "gauss2d(original equation)"
-# print getgauss2D(size)
-######
+
 
