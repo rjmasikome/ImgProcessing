@@ -77,15 +77,15 @@ def image_function_task1(img, m_array, m_size):
 
     img_array = np.asarray(img)
     m_size_half = m_size / 2
-    
+
     output = np.lib.pad(img_array, ((m_size_half,m_size_half), (m_size_half,m_size_half)), 'edge')
     output.setflags(write=True)
 
     for y in xrange(m_size_half,height+m_size_half) :    # traverse and process pixels in image arrays row-wise
         for x in xrange(m_size_half,width+m_size_half) :
             sum_output = 0
-            for j in xrange (-m_size_half,m_size_half+1) :
-                for i in xrange (-m_size_half,m_size_half+1) :
+            for j in xrange (-m_size_half,m_size_half) :
+                for i in xrange (-m_size_half,m_size_half) :
                     sum_output += output[x - i][y - j] * m_array[m_size_half - i][m_size_half - j]
                 sum_output += output[x - i][y - j] * m_array[m_size_half - i][m_size_half - j]
             output[x,y] = sum_output
