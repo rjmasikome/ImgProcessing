@@ -36,7 +36,8 @@ def get_mask_size():
     while True :
         m_size = raw_input('Input Mask Size : ');
         m_size = int(m_size)
-        return (m_size)
+        if m_size%2 == 0: print "Mask size should be odd"
+        else: return (m_size)
 
 def img_to_file(img, filename):
 #
@@ -79,7 +80,6 @@ def image_function_task1(img, m_array, m_size):
 
     output = np.lib.pad(img_array, ((m_size_half,m_size_half), (m_size_half,m_size_half)), 'edge')
     output.setflags(write=True)
-    print output
     for y in xrange(m_size_half,height+m_size_half) : 
         for x in xrange(m_size_half,width+m_size_half) :
             sum_output = 0
