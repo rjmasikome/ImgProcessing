@@ -71,7 +71,6 @@ def prepare_mask_2(m_size):             # Task 1 Number 2
     return m_array
 
 def image_function_task1(img, m_array, m_size):
-
     width, height = img.size    # get width and height size
     output = np.zeros(shape=(width,height), dtype=np.int)   # create new array 2d
 
@@ -80,14 +79,13 @@ def image_function_task1(img, m_array, m_size):
 
     output = np.lib.pad(img_array, ((m_size_half,m_size_half), (m_size_half,m_size_half)), 'edge')
     output.setflags(write=True)
-
-    for y in xrange(m_size_half,height+m_size_half) :    # traverse and process pixels in image arrays row-wise
+    print output
+    for y in xrange(m_size_half,height+m_size_half) : 
         for x in xrange(m_size_half,width+m_size_half) :
             sum_output = 0
             for j in xrange (-m_size_half,m_size_half) :
                 for i in xrange (-m_size_half,m_size_half) :
-                    sum_output += output[x - i][y - j] * m_array[m_size_half - i][m_size_half - j]
-                sum_output += output[x - i][y - j] * m_array[m_size_half - i][m_size_half - j]
+                    sum_output += output[x + i][y + j] * m_array[i+m_size_half][j+m_size_half]
             output[x,y] = sum_output
     return output[m_size_half:width+m_size_half,m_size_half:height+m_size_half]
 
