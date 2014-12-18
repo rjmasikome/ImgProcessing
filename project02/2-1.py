@@ -167,6 +167,12 @@ def getAverage(taskNum, maskArray):
     return averageArray
 
 def getMaskArray(taskNum):
+    #
+    # This function is to get the file list
+    # And return the file name as mask size for graph
+    # each mask runtime is stored in different 
+    # file name which corresponds to the mask size 
+    #
     dirName = "data" + str(taskNum)
 
     fullname = os.listdir(dirName)
