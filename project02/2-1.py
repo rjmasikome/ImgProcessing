@@ -111,7 +111,7 @@ def image_function_task1_2(img, m_array, m_size):
         output[x,:] = convolve1D(m_array,output[x,:], m_size, width)
     for y in range(height):
         output[:,y] = convolve1D(m_array,output[:,y], m_size, height)
-    return output[m_size:width+m_size,m_size:height+m_size] 
+    return output[m_size-1:width+m_size,m_size-1:height+m_size] 
 
 def image_function_task1_3(img, m_array, m_size):
     img_array = np.asarray(img)
