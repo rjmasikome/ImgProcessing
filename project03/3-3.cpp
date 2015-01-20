@@ -1,72 +1,132 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include <iostream>
-#include <stdio.h>
+#include <cmath>
 
 using namespace cv;
 using namespace std;
 
-/// Global variables
-char* source_window = "Source image";
-char* warp_window = "Warp";
-char* warp_rotate_window = "Warp + Rotate";
+int HoleRadius, leanX, leanY;
+Mat image, output, IndexX, IndexY;
+string ImageName;
+string anamorphosis = "Disk and ellipse anamorphosis";
 
-/** @function main */
- int main( int argc, char** argv )
- {
-   Point2f srcTri[3];
-   Point2f dstTri[3];
+void MapIndex( void );
 
-   Mat rot_mat( 2, 3, CV_32FC1 );
-   Mat warp_mat( 2, 3, CV_32FC1 );
-   Mat src, warp_dst, warp_rotate_dst;
-
-   /// Load the image
-   src = imread( "bauckhage.jpg", 1 );
-
-   /// Set the dst image the same type and size as src
-   warp_dst = Mat::zeros( src.rows, src.cols, src.type() );
-
-   /// Set your 3 points to calculate the  Affine Transform
-   srcTri[0] = Point2f( 0,0 );
-   srcTri[1] = Point2f( src.cols - 1, 0 );
-   srcTri[2] = Point2f( 0, src.rows - 1 );
-
-   dstTri[0] = Point2f( src.cols*0.0, src.rows*0.33 );
-   dstTri[1] = Point2f( src.cols*0.85, src.rows*0.25 );
-   dstTri[2] = Point2f( src.cols*0.15, src.rows*0.7 );
-
-   /// Get the Affine Transform
-   warp_mat = getAffineTransform( srcTri, dstTri );
-
-   /// Apply the Affine Transform just found to the src image
-   warpAffine( src, warp_dst, warp_mat, warp_dst.size() );
-
-   /** Rotating the image after Warp */
-
-   /// Compute a rotation matrix with respect to the center of the image
-   Point center = Point( warp_dst.cols/2, warp_dst.rows/2 );
-   double angle = -50.0;
-   double scale = 0.6;
-
-   /// Get the rotation matrix with the specifications above
-   rot_mat = getRotationMatrix2D( center, angle, scale );
-
-   /// Rotate the warped image
-   warpAffine( warp_dst, warp_rotate_dst, rot_mat, warp_dst.size() );
-
-   /// Show what you got
-   namedWindow( source_window, CV_WINDOW_AUTOSIZE );
-   imshow( source_window, src );
-
-   namedWindow( warp_window, CV_WINDOW_AUTOSIZE );
-   imshow( warp_window, warp_dst );
-
-   namedWindow( warp_rotate_window, CV_WINDOW_AUTOSIZE );
-   imshow( warp_rotate_window, warp_rotate_dst );
-
-   /// Wait until user exits the program
-   waitKey(0);
-
-   return 0;
+static void InputImage()
+{ 
+  while (true)
+  {
+    cout << "\tPlease enter image name:\n\t";
+    cin >> ImageName;
+    image = imread( ImageName, 1 );
+      if(!image.empty())
+      {
+        break;
+      }
+      else
+      {
+        cout << "\tImage does not exist. Try other name or put the file extension\n\n\n";
+      }
   }
+}
+
+static void InputParameter()
+{
+  
+  while (true)
+  {
+    cout << "\n\n\tPlease enter radius (Integer) of the hole \n\t(Enter 0 for default):\n\t";
+    cin >> HoleRadius;
+      if(cin.good()){
+          break;
+      }
+      else{
+          cout << "Error. The value is not integer." << std::endl;
+          cin.clear();
+          cin.ignore(INT_MAX, '\n');
+      }
+  }
+  while (true)
+  {
+    cout << "\n\n\tPlease enter the stretch value (Integer) to X axis \n\t(Enter 0 for default):\n\t";
+    cin >> leanX;
+      if(cin.good()){
+          break;
+      }
+      else{
+          cout << "Error. The value is not integer." << std::endl;
+          cin.clear();
+          cin.ignore(INT_MAX, '\n');
+      }
+  }
+  while (true)
+  {
+    cout << "\n\n\tPlease enter the stretch value (Integer) to Y axis \n\t(Enter 0 for default):\n\t";
+    cin >> leanY;
+      if(cin.good()){
+          break;
+      }
+      else{
+          cout << "Error. The value is not integer." << std::endl;
+          cin.clear();
+          cin.ignore(INT_MAX, '\n');
+      }
+  }
+}
+
+int main( int argc, char** argv )
+{
+  cout << "Disk and ellipse anamorphosis"
+      "\nFor Image Processing Project 3-3\n\n";
+
+  InputImage();  
+
+  // Commented snippet below is for debugging
+  // image = imread( "asterixGrey.jpg", 1 );
+  // image = imread( "bauckhage.jpg", 1 );
+
+  output.create( image.rows,image.rows, image.type() );
+  IndexX.create( image.rows,image.rows, CV_32FC1 );
+  IndexY.create( image.rows,image.rows, CV_32FC1 );
+
+  InputParameter();
+
+  MapIndex();
+    
+  remap( image, output, IndexX, IndexY, CV_INTER_LINEAR, BORDER_CONSTANT, Scalar(0,0, 0) );
+  namedWindow( anamorphosis, CV_WINDOW_AUTOSIZE );
+
+  imwrite( "3-3.jpg", output);
+
+  imshow( anamorphosis, output );
+
+  waitKey(0);
+  return 0;
+}
+
+void MapIndex( void )
+{
+  const float hRows = image.rows/2;
+  float angle, r;
+
+  for( int y = 0; y < image.rows; y++ )
+  { for( int x = 0; x < image.rows; x++ )
+    {
+      float newX = (x - hRows);
+      float newY = (y - hRows);
+      
+      angle=atan2(newY, newX);
+      if (angle < 0) {angle = angle+2*M_PI;}
+      angle = angle *180/M_PI;
+      angle = fmod((angle+180),360);
+      angle = angle*(image.cols-2)/360;
+
+      r=sqrt(pow(newX,2)/((10+leanX)/10)+pow(newY,2)/((10+leanY)/10));
+      
+      IndexX.at<float>(y,x) = angle;
+      IndexY.at<float>(y,x) = 2*(hRows-r)+HoleRadius;
+      
+    }
+  }  
+}
