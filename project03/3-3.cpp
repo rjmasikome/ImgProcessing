@@ -135,7 +135,7 @@ int main( int argc, char** argv )
   
   //Map the new image based on the index generated from MapIndex() function
   //This function is inplace, where it will write to the second parameter which should be cv::Mat type
-  remap( image, output, IndexX, IndexY, INTER_NEAREST, BORDER_CONSTANT, Scalar(0,0, 0) );
+  remap( image, output, IndexX, IndexY, CV_INTER_LINEAR, BORDER_CONSTANT, Scalar(0,0, 0) );
   
     
   //Create the GUI window
@@ -143,6 +143,16 @@ int main( int argc, char** argv )
 
   //Generate the file based on the output Matrix
   imwrite( "3-3.jpg", output);
+
+  //Generate image based on three interpolations
+  remap( image, output, IndexX, IndexY, INTER_NEAREST, BORDER_CONSTANT, Scalar(0,0, 0) );
+  imwrite( "3-3-nearest.jpg", output);
+
+  remap( image, output, IndexX, IndexY, INTER_LINEAR, BORDER_CONSTANT, Scalar(0,0, 0) );
+  imwrite( "3-3-linear.jpg", output);
+
+  remap( image, output, IndexX, IndexY, INTER_CUBIC, BORDER_CONSTANT, Scalar(0,0, 0) );
+  imwrite( "3-3-cubic.jpg", output);
 
   //Show the warped image to GUI window
   imshow( anamorphosis, output );
