@@ -135,15 +135,10 @@ int main( int argc, char** argv )
   
   //Map the new image based on the index generated from MapIndex() function
   //This function is inplace, where it will write to the second parameter which should be cv::Mat type
-    float time = getTickCount();
+  remap( image, output, IndexX, IndexY, INTER_NEAREST, BORDER_CONSTANT, Scalar(0,0, 0) );
+  
     
-    
-    //return 0;
-  remap( image, output, IndexX, IndexY, INTER_CUBIC, BORDER_CONSTANT, Scalar(0,0, 0) );
-    time = (getTickCount() - time)/getTickFrequency();
-    cout << "Times passed in seconds: " << time << endl;
-    
-    //Create the GUI window
+  //Create the GUI window
   namedWindow( anamorphosis, CV_WINDOW_AUTOSIZE );
 
   //Generate the file based on the output Matrix
