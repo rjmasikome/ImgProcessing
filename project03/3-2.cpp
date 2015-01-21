@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <opencv2/opencv.hpp>
+#include <stdio.h>
 
 using namespace cv;
 using namespace std;
@@ -196,7 +197,7 @@ int main( int argc, char** argv )
     
 //    process();
     /// Create Windows
-    namedWindow("ImageProcessing", CV_WINDOW_AUTOSIZE);
+    namedWindow("ImageProcessing", CV_WINDOW_NORMAL);
     
     /// Create Trackbars
 
