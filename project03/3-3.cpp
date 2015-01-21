@@ -94,7 +94,23 @@ int main( int argc, char** argv )
 
   MapIndex();
     
-  remap( image, output, IndexX, IndexY, CV_INTER_LINEAR, BORDER_CONSTANT, Scalar(0,0, 0) );
+  //remap( image, output, IndexX, IndexY, CV_INTER_LINEAR, BORDER_CONSTANT, Scalar(0,0, 0) );
+    
+    for (int x=0; x<image.rows; x++) {
+        const uchar* it = image.ptr<uchar>(x);
+        uchar* it_dest = output.ptr<uchar>(x);
+        for (int y=0; y<image.cols; y++)
+        {
+            IndexX.at<float>(y,x) = angle;
+            IndexY.at<float>(y,x) = 2*(hRows-r)+HoleRadius;
+            if (x_new < output.rows || x_new > 0) {
+                if (y_new < output.cols || y_new > 0) {
+                    it_dest[y+y_new+x_new*img_new.cols] = it[y];
+                }
+            }
+        }
+    }
+    
   namedWindow( anamorphosis, CV_WINDOW_AUTOSIZE );
 
   imwrite( "3-3.jpg", output);
