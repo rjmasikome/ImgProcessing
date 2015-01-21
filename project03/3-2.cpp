@@ -12,14 +12,14 @@
 using namespace cv;
 using namespace std;
 
-const int amp_slider_max_x = 200;
+const int amp_slider_max_x = 100;
 int amp_slider_x;
 const int freq_slider_max_x = 100;
 int freq_slider_x;
 const int phase_slider_max_x = 200;
 int phase_slider_x;
 
-const int amp_slider_max_y = 200;
+const int amp_slider_max_y = 100;
 int amp_slider_y;
 const int freq_slider_max_y = 100;
 int freq_slider_y;
@@ -30,6 +30,7 @@ int phase_slider_y;
 Mat img;
 Mat img_new;
 Mat img_dst;
+Mat img_buf;
 
 int amp_x = 0;
 int freq_x = 0;
@@ -38,26 +39,65 @@ int amp_y = 0;
 int freq_y = 0;
 int ph_y = 0;
 
+/**
+ * @function process
+ * @brief Process function
+ */
 void process()
 {
     img_new = Mat::zeros(img.rows*2, img.cols*2, img.type());
+    img_buf = Mat::zeros(img.rows*2, img.cols*2, img.type());
+   
+//    BASIC EQUATION
+//----------------------------------------------------------------------
+//    for (int x=0; x<img.rows; x++) {
+//        const uchar* it = img.ptr<uchar>(x);
+//        uchar* it_dest = img_new.ptr<uchar>(x);
+//        for (int y=0; y<img.cols; y++)
+//        {
+//            float delta_x = amp_x * sin((y*freq_x*M_PI/180)- ph_x);
+//            float delta_y = amp_y * sin((x*freq_y*M_PI/180)- ph_y);
+//
+//            uint8_t x_new = (uint8_t)delta_x + img.rows/2;
+//            uint8_t y_new = (uint8_t)delta_y + img.cols/2;
+//
+//            if (x_new < img_new.rows || x_new > 0) {
+//                if (y_new < img_new.cols || y_new > 0) {
+//                    it_dest[y+y_new+x_new*img_new.cols] = it[y];
+//                }
+//            }
+//        }
+//    }
+//----------------------------------------------------------------------
     
     for (int x=0; x<img.rows; x++) {
         const uchar* it = img.ptr<uchar>(x);
-        uchar* it_dest = img_new.ptr<uchar>(x);
+        uchar* it_dest = img_buf.ptr<uchar>(x);
         for (int y=0; y<img.cols; y++)
         {
             float delta_x = amp_x * sin((y*freq_x*M_PI/180)- ph_x);
-            float delta_y = amp_y * sin((x*freq_y*M_PI/180)- ph_y);
-
+            
             uint8_t x_new = (uint8_t)delta_x + img.rows/2;
-            uint8_t y_new = (uint8_t)delta_y + img.cols/2;
-
-            if (x_new < img_new.rows || x_new > 0) {
-                if (y_new < img_new.cols || y_new > 0) {
-                    it_dest[y+y_new+x_new*img_new.cols] = it[y];
-                }
+            
+            if (x_new < img_buf.rows || x_new > 0) {
+                    it_dest[y+x_new*img_buf.cols] = it[y];
             }
+        }
+    }
+    
+    
+    for (int x=img.rows/2-amp_x; x<amp_x+img.rows+img.rows/2; x++) {
+        const uchar* it = img_buf.ptr<uchar>(x);
+        uchar* it_dest = img_new.ptr<uchar>(x);
+        for (int y=0; y<img.cols; y++)
+        {
+            float delta_y = amp_y * sin((x*freq_y*M_PI/180)- ph_y);
+            
+            uint8_t y_new = (uint8_t)delta_y + img.cols/2;
+            
+                if (y_new < img_new.cols || y_new > 0) {
+                    it_dest[y+y_new] = it[y];
+                }
         }
     }
     
@@ -86,12 +126,12 @@ void process()
 }
 
 /**
- * @function on_trackbar
+ * @function on_trackbar_var
  * @brief Callback for trackbar
  */
 void on_trackbar_amp_x( int, void* )
 {
-    int amp_value = amp_slider_x - 100;
+    int amp_value = amp_slider_x;
     amp_x = amp_value;
     process();
 }
@@ -111,7 +151,7 @@ void on_trackbar_phase_x( int, void* )
 
 void on_trackbar_amp_y( int, void* )
 {
-    int amp_value = amp_slider_y - 100;
+    int amp_value = amp_slider_y;
     amp_y = amp_value;
     process();
 }
@@ -130,7 +170,10 @@ void on_trackbar_phase_y( int, void* )
 }
 
 
-
+/**
+ * @function main
+ * @brief Main Function
+ */
 int main( int argc, char** argv )
 {
     /// Read image ( same size, same type )
@@ -144,16 +187,16 @@ int main( int argc, char** argv )
     }
     
     /// Initialize values
-    amp_slider_x = 100;
+    amp_slider_x = 0;
     freq_slider_x = 0;
     phase_slider_x = 100;
-    amp_slider_y = 100;
+    amp_slider_y = 0;
     freq_slider_y = 0;
     phase_slider_y = 100;
     
 //    process();
     /// Create Windows
-    namedWindow("ImageProcessing", CV_WINDOW_NORMAL);
+    namedWindow("ImageProcessing", CV_WINDOW_AUTOSIZE);
     
     /// Create Trackbars
 
